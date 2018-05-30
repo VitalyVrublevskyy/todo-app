@@ -1,5 +1,6 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, ViewChild} from "@angular/core";
 import {TodoItem, TodoService} from "./provider/todo-service";
+import {ControlBarComponent} from "./components/control-bar/control-bar.component";
 
 @Component({
   selector: 'app-root',
@@ -8,22 +9,20 @@ import {TodoItem, TodoService} from "./provider/todo-service";
 })
 export class AppComponent implements OnInit {
 
+  @ViewChild(ControlBarComponent)
+  controlBar: ControlBarComponent;
+
   private _collection: TodoItem[];
 
   get collection(): TodoItem[] {
-    if (this.mode === Mode.Active) {
+    if (this.controlBar.mode === Mode.Active) {
       return this._collection.filter(item => !item.completed);
-    } else if (this.mode === Mode.Completed) {
+    } else if (this.controlBar.mode === Mode.Completed) {
       return this._collection.filter(item => item.completed);
     }
     return this._collection;
   }
 
-  text: string;
-
-  mode: Mode = Mode.All;
-
-  Mode = Mode;
 
   constructor(public service: TodoService) {
   }
@@ -32,21 +31,15 @@ export class AppComponent implements OnInit {
     this._collection = this.service.getTodoItems();
   }
 
+
+  onAddItem(item: TodoItem) {
+    this._collection.push(item);
+  }
+
   get leftItemsCount(): number {
     return this.collection.filter(item => !item.completed).length;
   }
 
-  toggleClick(item: TodoItem) {
-    item.completed = !item.completed;
-  }
-
-  onEnterText(value: string) {
-    if (value.trim().length) {
-      this.collection.push({name: value, completed: false});
-    }
-
-    this.text = '';
-  }
 
   onDelete(todo: TodoItem) {
     this._collection = this._collection.filter(item => item !== todo);
@@ -54,10 +47,6 @@ export class AppComponent implements OnInit {
 
   onDeleteCompleted() {
     this._collection = this._collection.filter(item => !item.completed);
-  }
-
-  handleFilter(mode: Mode) {
-    this.mode = mode;
   }
 
 }
